@@ -3,10 +3,11 @@ const app = express() // express를 함수처럼 호출하고 있음. 그러니�
 const fs = require('fs')
 const template = require('./lib/template.js')
 
-//( 경로, 호출 될 함수)
+/* ( 경로, 호출 될 함수)
 // app.get('/', function(req,res){
 //   return res.send('Hello World')
-// })
+ })
+ */
 app.get('/', (request, response) => { // get : route, routing 
   fs.readdir('./data', function(error, filelist){
     var title = 'Welcome';
