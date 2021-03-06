@@ -1,6 +1,7 @@
 var http = require('http');
 var fs = require('fs');
 var url = require('url')
+var qs = require('querystring')
 
 function templateHTML(title, list, body){
 	return `
@@ -32,6 +33,8 @@ function templateList(filelist){
 }
 
 var app = http.createServer(function(request,response){
+	//request 요청할 떄 웹브라우져가 보낸 정보들
+	//response 응답할 때 우리가 웹브라우져에 전송 할 정보들 
 	var _url = request.url;
 	var queryData = url.parse(_url, true).query;
 	var pathname = url.parse(_url, true).pathname;
@@ -61,12 +64,12 @@ var app = http.createServer(function(request,response){
 			var title = 'Web - create';
 			var list = templateList(filelist);
 			var template = templateHTML(title, list, `
-				<form action="http://localhost:3000/process_create" method="post">
+				<form action="http://localhost:3000/create_process" method="post">
 					<p>
-						<input type="text" name="title">
+						<input type="text" name="title" placeholder="title" >
 					</p>
 					<p>
-						<textarea name="description"></textarea>
+						<textarea name="description" placeholder="description"></textarea>
 					</p>
 					<p>
 						<input type="submit">
@@ -77,11 +80,29 @@ var app = http.createServer(function(request,response){
 			response.end(template);
 			
 	})
-}
-	else {
+} else if(pathname === '/create_process') {
+	var body = '';
+	request.on('data', function(data){
+		body = body + data;
+	})
+	request.on('end', function(){
+		// 아래 코드는 데이터를 타이틀과 디스크립션으로 나눠서 받는 방법
+		var post = qs.parse(body); // parse : 정보를 객체화 할 수 있게 해주는 함수
+		var title = post.title;
+		var description = post.description;
+		// 포스트방식으로 전송된 데이터를 데이터 디렉토리안에 파일의 형태로 저장하는 방법
+		fs.writeFile(`data/${title}`, description, 'utf8', function(err){
+			response.writeHead(302, 
+				{Location:`/?id=${title}`}); // 200은 성공했다는 뜻, 302는 다른곳으로 리다이렉트하라는 뜻
+			response.end();
+		})
+		
+	});
+
+} else {
 		response.writeHead(404);
 		response.end('not found');
 	}
-})
+});
 
 app.listen(3000);
