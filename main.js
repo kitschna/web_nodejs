@@ -153,11 +153,23 @@ var app = http.createServer(function(request,response){
 					response.end();
 			})
 		})
-		console.log(post)
-
-		
 	});
-	} else {
+	} else if(pathname === '/delete_process'){
+		var body = '';
+		request.on('data', function(data){
+			body = body + data;
+		})
+		request.on('end', function(){
+			var post = qs.parse(body); // parse : 정보를 객체화 할 수 있게 해주는 함수
+			var id = post.id;
+			fs.unlink(`data/${id}`, function(error){
+				response.writeHead(302, 
+					{Location:`/`}); // 200은 성공했다는 뜻, 302는 다른곳으로 리다이렉트하라는 뜻
+					response.end();
+			})
+		});
+	}
+	else {
 		response.writeHead(404);
 		response.end('not found');
 	}
